@@ -31,3 +31,23 @@ Add configurable client approval workflow definitions and approval step records.
 Added approval workflow and approval step models, plus endpoints to create workflows, create entity-specific steps, and review steps.
 
 The important design lesson is decoupling approvals from business records. Expenses, payroll, hires, and other entities can later share the same approval infrastructure.
+
+## Verify It In The Code
+
+- The whole controller is restricted to platform roles `PLATFORM_ADMIN` and `SUPPORT_AGENT`
+  (`apps/api/src/modules/approvals/approvals.controller.ts:13-14`), so clients cannot yet approve their own steps
+  despite the "client approval" name.
+- `reviewStep` reads the step, rejects anything not `PENDING`, then updates it in a separate statement
+  (`apps/api/src/modules/approvals/approvals.service.ts:79-92`).
+
+## Exercises
+
+1. **Goal:** make the review race-safe.
+   **Check:** replacing the read-then-update with `updateMany({ where: { id, status: "PENDING" } })` and
+   checking `count === 1` makes the second of two concurrent reviews fail instead of overwriting the
+   first decision.
+
+## Senior Review Notes
+
+- No business module consults approvals yet, so a completed workflow does not gate any action; that is
+  consistent with the plan's "future slices" note.

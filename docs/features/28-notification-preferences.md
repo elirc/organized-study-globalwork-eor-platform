@@ -31,3 +31,24 @@ Let users opt in or out of notification types so email behavior becomes user-con
 Added `NotificationPreference` and current-user preference endpoints under `notifications/preferences`. `NotificationsService.createAndQueue()` now checks user preferences before queueing user-targeted email work.
 
 The important design lesson is centralization. Preference enforcement belongs in the notification service because every module should not need to remember how opt-outs work.
+
+## Verify It In The Code
+
+- Preference endpoints and storage: `listPreferences` / `upsertPreference` in
+  `apps/api/src/modules/notifications/notifications.service.ts` (keyed by `userId_type`).
+- Enforcement: `createAndQueue` (`:64`) looks up the user's preference for the notification type; when
+  email is disabled it stores the notification with `status: "FAILED"` (`:81-91`) and returns before the
+  outbox transaction (`:95`).
+
+## Exercises
+
+1. **Goal:** separate opt-out from failure.
+   **Check:** after adding a `SUPPRESSED` (or `SKIPPED`) status, an opted-out notification is stored with
+   that status and the operations dashboard's failure count does not change.
+
+## Senior Review Notes
+
+- Recording opt-outs as `FAILED` mixes user choice with delivery failure in every report that counts
+  failures.
+- The opt-out path returns before the domain event is recorded (`:118`), so Feature 44's event history
+  has no record of suppressed notifications.

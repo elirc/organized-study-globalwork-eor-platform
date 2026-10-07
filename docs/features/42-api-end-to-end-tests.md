@@ -8,7 +8,7 @@ Add a Nest API end-to-end test that boots the app and tests a real HTTP flow.
 
 ### Impacted Codebase Areas
 
-- `apps/api/src/app.e2e-spec.ts`: new e2e test.
+- `apps/api/src/app.e2e.ts`: new e2e test (the plan named it `app.e2e-spec.ts`; the file in the tree is `app.e2e.ts`, picked up by `apps/api/jest.e2e.config.cjs`).
 - `apps/api/package.json`: add test:e2e script if needed.
 - `docs/features/42-api-end-to-end-tests.md`: plan and build journal.
 
